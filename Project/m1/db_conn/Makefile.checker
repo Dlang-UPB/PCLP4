@@ -1,0 +1,44 @@
+SHELL:=/bin/bash --rcfile ~/.bashrc
+
+.PHONY: all clean run pack build-pre build-post
+
+all: build-pre run build-post
+
+build-pre:
+
+build-post:
+
+run: build wait
+	make -C ../docker start
+	WAIT_HOSTS=127.0.0.1:27017 ./wait
+	echo -e "==========\nMongo Logs\n=========="
+	cd ../docker && docker-compose logs mongo
+	dub run
+
+build:
+	# Uncomment for vmchecker archive to fix snapshot related clock-skew
+	find ./ -exec touch {} \;
+	find ../docker -exec touch {} \;
+	find ~/.dub/ -exec touch {} \;
+	dub build
+
+wait:
+	wget https://github.com/ufoscout/docker-compose-wait/releases/download/2.9.0/wait
+	chmod +x wait
+
+pack-checker:
+	cd .. &&\
+		zip -r milestone-1.zip docker \
+		db_conn/dub.json db_conn/Makefile.checker db_conn/source/checker.d db_conn/wait && \
+		cd db_conn
+	mv ../milestone-1.zip .
+
+pack-students:
+	cd .. &&\
+		zip -r archive-milestone-1.zip db_conn/dub.json db_conn/source/app.d && \
+		cd db_conn
+	mv ../archive-milestone-1.zip .
+
+clean:
+	rm -rf milestone-1.zip db_conn
+
