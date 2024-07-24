@@ -1,0 +1,27 @@
+name: Test PCLP4 Project Checkers
+run-name: ${{ github.actor }} is testing project checkers
+
+on:
+  push:
+    paths:
+      - 'Project/**'
+
+jobs:
+  Test-2022_2023-Project-Milestone-1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            m1-2022_2023:
+              - 'Project/m1/**'
+
+      - name: Run the checker
+        if: ${{ steps.filter.outputs.m1-2022_2023 == 'true' }}
+        run: |
+          cd Project/m1/db_conn
+          make start
